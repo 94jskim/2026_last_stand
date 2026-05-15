@@ -374,7 +374,7 @@ function updateSummaryUI() {
                         <span>불운</span><span>평균</span><span>행운</span>
                     </div>
                 </div>
-                <div class="luck-card-note">전차 운(70%) + 소모품 운(30%) 가중 합산 반영</div>
+                <div class="luck-card-note">전차 운(60%) + 상자 드롭 운(20%) + 소모품 운(20%) 가중 합산 반영</div>
             </div>`);
     }
 
@@ -643,7 +643,8 @@ function calcConsumableLuck() {
         gachaData[boxName].slots.forEach(slot => {
             slot.groups.forEach(g => {
                 g.items.forEach(i => {
-                    if (!i.y && i.name !== '꽝') {
+                    // 상자 드롭(파편, 조각, 코어)은 별도의 가치 연산을 위해 일반 소모품 통계에서 제외
+                    if (!i.y && i.name !== '꽝' && !['파편', '조각', '코어'].includes(i.name)) {
                         const expQty = n * g.prob * i.prob * i.qty;
                         expectedConsumables[i.name] = (expectedConsumables[i.name] || 0) + expQty;
                     }
@@ -728,20 +729,59 @@ function calcComprehensiveLuck() {
         const ratio = actualTanks / Math.max(expectedTanks, 0.001);
         const score = Math.max(0, Math.min(1, 1 - ratio / 2));
 
-        weightedScore += score * n;
-        totalWeight += n;
+        // 상위 상자의 획득 체감을 극대화하기 위해 단계별로 기하급수적 가중치 부여
+        // 파편: 1, 조각: 10, 코어: 50
+        const weightMap = { '파편': 1, '조각': 10, '코어': 50 };
+        const weightMultiplier = weightMap[boxName] || 1;
+        const weight = n * weightMultiplier;
+
+        weightedScore += score * weight;
+        totalWeight += weight;
     }
 
     if (totalWeight === 0) return null;
 
     const tankScore = weightedScore / totalWeight;
 
-    // 소모품 운 지수
+    // 소모품 운 지수 (상자 제외)
     const consLuck = calcConsumableLuck();
     const consScore = consLuck ? consLuck.score : 0.5;
 
-    // 종합 (전차 70%, 소모품 30%)
-    const avg = tankScore * 0.7 + consScore * 0.3;
+    // ── 상자 내 상자 드롭 운 지수 연산 ──
+    // 상위 상자의 획득 체감을 극대화하기 위해 단계별로 기하급수적 가중치 부여
+    // 가중치: 파편 1, 조각 10, 코어 50
+    // 상위 상자에서 하위 상자가 나오면 기대 가치 대비 실제 획득 가치가 떨어져 불운으로 평가됨
+    const boxWeights = { '파편': 1, '조각': 10, '코어': 50 };
+    let expectedBoxVal = 0;
+    let actualBoxVal = 0;
+
+    for (const bName in openedCount) {
+        const nBox = openedCount[bName];
+        if (nBox === 0 || !gachaData[bName]) continue;
+        gachaData[bName].slots.forEach(slot => {
+            slot.groups.forEach(g => {
+                g.items.forEach(i => {
+                    if (boxWeights[i.name]) {
+                        expectedBoxVal += nBox * g.prob * i.prob * i.qty * boxWeights[i.name];
+                    }
+                });
+            });
+        });
+    }
+
+    for (const name in boxWeights) {
+        actualBoxVal += (inventory[name] || 0) * boxWeights[name];
+    }
+
+    let boxDropScore = 0.5;
+    if (expectedBoxVal > 0) {
+        const boxRatio = actualBoxVal / expectedBoxVal;
+        // ratio > 1: 행운, ratio < 1: 불운
+        boxDropScore = Math.max(0, Math.min(1, 1 - boxRatio / 2));
+    }
+
+    // 종합 (전차 60%, 상자 드롭 20%, 소모품 20%)
+    const avg = tankScore * 0.6 + boxDropScore * 0.2 + consScore * 0.2;
 
     // 통합 점수 → 라벨
     const top = Math.round((1 - avg) * 100);
