@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>미르니 전리품 상자 시뮬레이터</title>
+    <meta name="description" content="2026 미르니 시즌 전리품 상자(파편·조각·코어) 확률 시뮬레이터">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap">
+    <link rel="stylesheet" href="style.css">
+    <script>
+        (function () {
+            function getTheme() {
+                const saved = localStorage.getItem('theme-pref');
+                if (saved) return saved;
+                return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+            const theme = getTheme();
+            if (theme === 'light') {
+                document.documentElement.classList.add('light-theme');
+            }
+        })();
+    </script>
+</head>
+
+<body>
+
+    <!-- ══ 데스크탑 헤더 ════════════════════════════════════════ -->
+    <header class="top-header desktop-only">
+        <h1 class="page-title">미르니 전리품 상자 시뮬레이터</h1>
+        <div class="theme-switch-wrapper">
+            <span class="theme-icon">☀️</span>
+            <label class="theme-switch">
+                <input type="checkbox" id="theme-toggle" onchange="toggleTheme(this.checked)">
+                <span class="slider round"></span>
+            </label>
+            <span class="theme-icon">🌙</span>
+        </div>
+    </header>
+    <script>
+        (function () {
+            const isDark = !document.documentElement.classList.contains('light-theme');
+            document.getElementById('theme-toggle').checked = isDark;
+        })();
+
+        function toggleTheme(isDark) {
+            if (isDark) {
+                document.documentElement.classList.remove('light-theme');
+                localStorage.setItem('theme-pref', 'dark');
+            } else {
+                document.documentElement.classList.add('light-theme');
+                localStorage.setItem('theme-pref', 'light');
+            }
+        }
+
+        // 시스템 테마 변경 감지 (수동 설정 안 했을 경우)
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            if (!localStorage.getItem('theme-pref')) {
+                const isDark = e.matches;
+                document.getElementById('theme-toggle').checked = isDark;
+                if (isDark) {
+                    document.documentElement.classList.remove('light-theme');
+                } else {
+                    document.documentElement.classList.add('light-theme');
+                }
+            }
+        });
+    </script>
+
+    <div class="app-container">
+
+        <!-- ══ 모바일 헤더 (mobile only) ══════════════════════════════ -->
+        <header class="mobile-header">
+            <button class="icon-btn" onclick="openSidebar()" aria-label="보유 상태 열기">☰</button>
+            <span class="mobile-title">미르니 시뮬레이터</span>
+            <button class="icon-btn shop-icon-btn" onclick="openShopModal()" aria-label="상점 열기">🛒</button>
+        </header>
+
+        <!-- ══ 사이드바 오버레이 (mobile) ═══════════════════════════ -->
+        <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+        <!-- ══ 사이드바 : 보유 상태 ════════════════════════════════ -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-head">
+                <h2>보유 상태</h2>
+                <button class="icon-btn sidebar-close-btn" onclick="closeSidebar()" aria-label="닫기">✕</button>
+            </div>
+            <p class="sidebar-hint">획득 시 자동 체크됩니다. 체크 항목은 뽑기에서 제외되며 남은 아이템에 확률이 균등 분배됩니다.</p>
+
+            <div class="checklist-section">
+                <h3>⚙ 전차 (슬롯 1)</h3>
+                <div id="tanks-list"></div>
+            </div>
+            <div class="checklist-section">
+                <h3>✦ 치장품 (기타 슬롯)</h3>
+                <div id="cosmetics-list"></div>
+            </div>
+        </aside>
+
+        <!-- ══ 메인 콘텐츠 ════════════════════════════════════════ -->
+        <main class="main-content">
+
+            <!-- 상자 개봉 영역 -->
+            <section class="box-container">
+                <!-- 파편 상자 -->
+                <div class="box-group">
+                    <div class="box-group-title">
+                        <h3>💠 파편 상자</h3>
+                        <span class="inv-badge">보유 <span id="inv-count-파편">0</span>개</span>
+                    </div>
+                    <div class="btn-row">
+                        <button class="box-btn box-open-btn" data-box="파편" data-count="1" onclick="openBoxes('파편',1)"
+                            disabled>1개 열기</button>
+                        <button class="box-btn box-open-btn" data-box="파편" data-count="5" onclick="openBoxes('파편',5)"
+                            disabled>5개 열기</button>
+                    </div>
+                    <div class="pity-bar-wrap">
+                        <div class="pity-label-row"><span class="pity-title">⚡ 천장</span><span id="pity-text-파편">0 /
+                                50</span></div>
+                        <div class="pity-track">
+                            <div class="pity-fill" id="pity-bar-파편"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 조각 상자 -->
+                <div class="box-group">
+                    <div class="box-group-title">
+                        <h3>🔷 조각 상자</h3>
+                        <span class="inv-badge">보유 <span id="inv-count-조각">0</span>개</span>
+                    </div>
+                    <div class="btn-row">
+                        <button class="box-btn box-open-btn" data-box="조각" data-count="1" onclick="openBoxes('조각',1)"
+                            disabled>1개 열기</button>
+                        <button class="box-btn box-open-btn" data-box="조각" data-count="5" onclick="openBoxes('조각',5)"
+                            disabled>5개 열기</button>
+                    </div>
+                    <div class="pity-bar-wrap">
+                        <div class="pity-label-row"><span class="pity-title">⚡ 천장</span><span id="pity-text-조각">0 /
+                                40</span></div>
+                        <div class="pity-track">
+                            <div class="pity-fill" id="pity-bar-조각"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 코어 상자 -->
+                <div class="box-group">
+                    <div class="box-group-title">
+                        <h3>💎 코어 상자</h3>
+                        <span class="inv-badge">보유 <span id="inv-count-코어">0</span>개</span>
+                    </div>
+                    <div class="btn-row">
+                        <button class="box-btn box-open-btn" data-box="코어" data-count="1" onclick="openBoxes('코어',1)"
+                            disabled>1개 열기</button>
+                        <button class="box-btn box-open-btn" data-box="코어" data-count="5" onclick="openBoxes('코어',5)"
+                            disabled>5개 열기</button>
+                    </div>
+                    <div class="pity-bar-wrap">
+                        <div class="pity-label-row"><span class="pity-title">⚡ 천장</span><span id="pity-text-코어">0 /
+                                20</span></div>
+                        <div class="pity-track">
+                            <div class="pity-fill" id="pity-bar-코어"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 상점 패널 (데스크탑에서 항상 표시) -->
+            <section class="shop-panel desktop-only">
+                <div class="shop-header">
+                    <span class="shop-title">🛒 파편 상자 구매</span>
+                    <div class="shop-meta">
+                        <span>총 구매 비용 <strong class="total-cost-display">0원</strong></span>
+                        <button class="reset-all-btn" onclick="resetAll()">🔄 전체 초기화</button>
+                    </div>
+                </div>
+                <div class="shop-packages" id="shop-packages"></div>
+            </section>
+
+            <!-- 결과 영역 -->
+            <section class="results-area">
+                <!-- 상세 로그 -->
+                <div class="log-panel">
+                    <div class="panel-header">
+                        <h2>📋 상세 로그</h2>
+                        <button class="text-btn" onclick="clearLog()">초기화</button>
+                    </div>
+                    <div class="stats-bar" id="stats-bar">
+                        <span>총 개봉 <strong>0</strong>개</span>
+                    </div>
+                    <div class="scroll-area" id="result-log">
+                        <p class="log-placeholder">상자를 개봉하면 기록이 나타납니다.</p>
+                    </div>
+                </div>
+                <!-- 누적 종합 -->
+                <div class="summary-panel">
+                    <div class="panel-header">
+                        <h2>📊 누적 획득 (종합)</h2>
+                        <div class="btn-row">
+                            <button class="text-btn desktop-only" onclick="openSummaryModal()">⛶ 크게 보기</button>
+                            <!-- 모바일: 초기화는 여기에 -->
+                            <button class="reset-all-btn mobile-only" onclick="resetAll()">🔄 초기화</button>
+                        </div>
+                    </div>
+                    <div class="scroll-area" id="result-summary"></div>
+                </div>
+            </section>
+
+        </main>
+    </div> <!-- // app-container -->
+
+    <!-- ══ 상점 모달 (모바일 전용 + 공통 오버레이) ════════════ -->
+    <div class="modal-overlay" id="shop-modal" onclick="closeShopModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <span class="shop-title">🛒 파편 상자 구매</span>
+                <button class="icon-btn" onclick="closeShopModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="shop-packages" id="shop-packages-modal"></div>
+                <div class="modal-footer">
+                    총 구매 비용 <strong class="total-cost-display">0원</strong>
+                    <button class="reset-all-btn" onclick="resetAll();closeShopModal()">🔄 전체 초기화</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ 종합 결과 모달 (크게 보기) ════════════ -->
+    <div class="modal-overlay scroll-overlay" id="summary-modal" onclick="closeSummaryModal()">
+        <div class="modal-content modal-lg modal-full-height" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <span class="shop-title">📊 누적 획득 종합 보고서</span>
+                <button class="icon-btn" onclick="closeSummaryModal()">✕</button>
+            </div>
+            <div class="modal-body" id="modal-summary-content">
+                <!-- 내용 복사 대상 -->
+            </div>
+        </div>
+    </div>
+
+    <script src="simulator.js"></script>
+</body>
+
+</html>

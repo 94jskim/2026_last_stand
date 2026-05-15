@@ -1,0 +1,13 @@
+{
+  "_comment": "파편 상자 구매 패키지. freeOnly:true 항목은 계정당 최초 1회만 수령 가능합니다.",
+  "title": "파편 상자",
+  "targetBox": "파편",
+  "packages": [
+    { "id": "free", "label": "무료 10개", "count": 10, "price": 0,      "freeOnly": true  },
+    { "id": "p5",   "label": "5개",       "count": 5,  "price": 10180,  "freeOnly": false },
+    { "id": "p30",  "label": "30개",      "count": 30, "price": 59830,  "freeOnly": false },
+    { "id": "p80",  "label": "80개",      "count": 80, "price": 154430, "freeOnly": false },
+    { "id": "p120", "label": "120개",     "count": 120,"price": 218700, "freeOnly": false },
+    { "id": "p230", "label": "230개",     "count": 230,"price": 394640, "freeOnly": false }
+  ]
+}

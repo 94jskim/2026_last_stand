@@ -1,0 +1,803 @@
+{
+  "파편": {
+    "slots": [
+      {
+        "id": "슬롯1",
+        "groups": [
+          {
+            "prob": 0.02,
+            "items": [
+              {
+                "name": "Alby",
+                "qty": 1,
+                "prob": 0.08,
+                "y": true,
+                "alt": "코어"
+              },
+              {
+                "name": "Bzyg",
+                "qty": 1,
+                "prob": 0.05,
+                "y": true,
+                "alt": "코어"
+              },
+              {
+                "name": "MTC 2TC",
+                "qty": 1,
+                "prob": 0.08,
+                "y": true,
+                "alt": "코어"
+              },
+              {
+                "name": "Prototipo 6",
+                "qty": 1,
+                "prob": 0.08,
+                "y": true,
+                "alt": "코어"
+              },
+              {
+                "name": "Grom",
+                "qty": 1,
+                "prob": 0.12,
+                "y": true,
+                "alt": "코어"
+              },
+              {
+                "name": "Sentinelle",
+                "qty": 1,
+                "prob": 0.12,
+                "y": true,
+                "alt": "코어"
+              },
+              {
+                "name": "120G FT",
+                "qty": 1,
+                "prob": 0.11,
+                "y": true,
+                "alt": "코어"
+              },
+              {
+                "name": "Kpz.EK1",
+                "qty": 1,
+                "prob": 0.12,
+                "y": true,
+                "alt": "코어"
+              },
+              {
+                "name": "VCS 6X6",
+                "qty": 1,
+                "prob": 0.12,
+                "y": true,
+                "alt": "코어"
+              },
+              {
+                "name": "Yong Bing",
+                "qty": 1,
+                "prob": 0.12,
+                "y": true,
+                "alt": "코어"
+              }
+            ]
+          },
+          {
+            "prob": 0.98,
+            "items": [
+              {
+                "name": "꽝",
+                "qty": 1,
+                "prob": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "슬롯2",
+        "groups": [
+          {
+            "prob": 0.5,
+            "items": [
+              {
+                "name": "크래딧",
+                "qty": 50000,
+                "prob": 0.80
+              },
+              {
+                "name": "크래딧",
+                "qty": 100000,
+                "prob": 0.15
+              },
+              {
+                "name": "크래딧",
+                "qty": 250000,
+                "prob": 0.05
+              }
+            ]
+          },
+          {
+            "prob": 0.5,
+            "items": [
+              {
+                "name": "책자",
+                "qty": 1,
+                "prob": 0.80
+              },
+              {
+                "name": "지침",
+                "qty": 1,
+                "prob": 0.15
+              },
+              {
+                "name": "교본",
+                "qty": 1,
+                "prob": 0.05
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "슬롯3",
+        "groups": [
+          {
+            "prob": 1.0,
+            "items": [
+              {
+                "name": "자경물자",
+                "qty": 1,
+                "prob": 0.4
+              },
+              {
+                "name": "경험치 물자",
+                "qty": 1,
+                "prob": 0.4
+              },
+              {
+                "name": "크래딧 물자",
+                "qty": 1,
+                "prob": 0.2
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "슬롯4",
+        "groups": [
+          {
+            "prob": 0.5,
+            "items": [
+              {
+                "name": "프리미엄",
+                "qty": 1,
+                "prob": 0.80
+              },
+              {
+                "name": "프리미엄",
+                "qty": 3,
+                "prob": 0.15
+              },
+              {
+                "name": "프리미엄",
+                "qty": 7,
+                "prob": 0.05
+              }
+            ]
+          },
+          {
+            "prob": 0.5,
+            "items": [
+              {
+                "name": "꽝",
+                "qty": 1,
+                "prob": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "슬롯5",
+        "groups": [
+          {
+            "prob": 0.2,
+            "items": [
+              {
+                "name": "파편",
+                "qty": 1,
+                "prob": 0.23
+              },
+              {
+                "name": "조각",
+                "qty": 1,
+                "prob": 0.75
+              },
+              {
+                "name": "코어",
+                "qty": 1,
+                "prob": 0.02
+              }
+            ]
+          },
+          {
+            "prob": 0.8,
+            "items": [
+              {
+                "name": "꽝",
+                "qty": 1,
+                "prob": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "조각": {
+    "slots": [
+      {
+        "id": "슬롯1",
+        "groups": [
+          {
+            "prob": 0.02,
+            "items": [
+              {
+                "name": "Ogar",
+                "qty": 1,
+                "prob": 0.10,
+                "y": true,
+                "alt": "코어"
+              },
+              {
+                "name": "SFAC105",
+                "qty": 1,
+                "prob": 0.35,
+                "y": true,
+                "alt": "코어"
+              },
+              {
+                "name": "Vercingetorix",
+                "qty": 1,
+                "prob": 0.35,
+                "y": true,
+                "alt": "코어"
+              },
+              {
+                "name": "Chieftain MK.6",
+                "qty": 1,
+                "prob": 0.20,
+                "y": true,
+                "alt": "코어"
+              }
+            ]
+          },
+          {
+            "prob": 0.98,
+            "items": [
+              {
+                "name": "꽝",
+                "qty": 1,
+                "prob": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "슬롯2",
+        "groups": [
+          {
+            "prob": 1.0,
+            "items": [
+              {
+                "name": "자유 경험치",
+                "qty": 1500,
+                "prob": 0.80
+              },
+              {
+                "name": "자유 경험치",
+                "qty": 5000,
+                "prob": 0.15
+              },
+              {
+                "name": "자유 경험치",
+                "qty": 25000,
+                "prob": 0.05
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "슬롯3",
+        "groups": [
+          {
+            "prob": 0.2475,
+            "items": [
+              {
+                "name": "프리미엄",
+                "qty": 3,
+                "prob": 0.80
+              },
+              {
+                "name": "프리미엄",
+                "qty": 7,
+                "prob": 0.15
+              },
+              {
+                "name": "프리미엄",
+                "qty": 14,
+                "prob": 0.05
+              }
+            ]
+          },
+          {
+            "prob": 0.2550,
+            "items": [
+              {
+                "name": "자경물자",
+                "qty": 1,
+                "prob": 0.34
+              },
+              {
+                "name": "경험치 물자",
+                "qty": 1,
+                "prob": 0.33
+              },
+              {
+                "name": "크래딧 물자",
+                "qty": 1,
+                "prob": 0.33
+              }
+            ]
+          },
+          {
+            "prob": 0.2475,
+            "items": [
+              {
+                "name": "지침",
+                "qty": 1,
+                "prob": 0.80
+              },
+              {
+                "name": "교본",
+                "qty": 1,
+                "prob": 0.05
+              },
+              {
+                "name": "훈련교본",
+                "qty": 1,
+                "prob": 0.15
+              }
+            ]
+          },
+          {
+            "prob": 0.15,
+            "items": [
+              {
+                "name": "꽝",
+                "qty": 1,
+                "prob": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "슬롯4",
+        "groups": [
+          {
+            "prob": 0.5,
+            "items": [
+              {
+                "name": "m129 유탄",
+                "qty": 1,
+                "prob": 0.2,
+                "y": true,
+                "alt": "m129 유탄"
+              },
+              {
+                "name": "Mk18 유탄",
+                "qty": 1,
+                "prob": 0.2,
+                "y": true,
+                "alt": "Mk18 유탄"
+              },
+              {
+                "name": "탄약함",
+                "qty": 1,
+                "prob": 0.2,
+                "y": true,
+                "alt": "탄약함"
+              },
+              {
+                "name": "M25 로켓",
+                "qty": 1,
+                "prob": 0.2,
+                "y": true,
+                "alt": "M25 로켓"
+              },
+              {
+                "name": "XM-30",
+                "qty": 1,
+                "prob": 0.2,
+                "y": true,
+                "alt": "XM-30"
+              }
+            ]
+          },
+          {
+            "prob": 0.5,
+            "items": [
+              {
+                "name": "꽝",
+                "qty": 1,
+                "prob": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "슬롯5",
+        "groups": [
+          {
+            "prob": 0.2,
+            "items": [
+              {
+                "name": "파편",
+                "qty": 1,
+                "prob": 0.02
+              },
+              {
+                "name": "조각",
+                "qty": 1,
+                "prob": 0.23
+              },
+              {
+                "name": "코어",
+                "qty": 1,
+                "prob": 0.75
+              }
+            ]
+          },
+          {
+            "prob": 0.8,
+            "items": [
+              {
+                "name": "꽝",
+                "qty": 1,
+                "prob": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "슬롯6",
+        "groups": [
+          {
+            "prob": 0.5,
+            "items": [
+              {
+                "name": "부속품",
+                "qty": 100,
+                "prob": 0.80
+              },
+              {
+                "name": "부속품",
+                "qty": 200,
+                "prob": 0.15
+              },
+              {
+                "name": "부속품",
+                "qty": 500,
+                "prob": 0.05
+              }
+            ]
+          },
+          {
+            "prob": 0.5,
+            "items": [
+              {
+                "name": "5배임무",
+                "qty": 3,
+                "prob": 0.80
+              },
+              {
+                "name": "5배임무",
+                "qty": 5,
+                "prob": 0.15
+              },
+              {
+                "name": "5배임무",
+                "qty": 10,
+                "prob": 0.05
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "코어": {
+    "slots": [
+      {
+        "id": "슬롯1",
+        "groups": [
+          {
+            "prob": 0.1,
+            "items": [
+              {
+                "name": "Serpente",
+                "qty": 1,
+                "prob": 0.25,
+                "y": true,
+                "alt": "코어"
+              },
+              {
+                "name": "Schwertwal",
+                "qty": 1,
+                "prob": 0.25,
+                "y": true,
+                "alt": "코어"
+              },
+              {
+                "name": "MBT-B",
+                "qty": 1,
+                "prob": 0.50,
+                "y": true,
+                "alt": "코어"
+              }
+            ]
+          },
+          {
+            "prob": 0.9,
+            "items": [
+              {
+                "name": "꽝",
+                "qty": 1,
+                "prob": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "슬롯2",
+        "groups": [
+          {
+            "prob": 1.0,
+            "items": [
+              {
+                "name": "골드",
+                "qty": 750,
+                "prob": 0.80
+              },
+              {
+                "name": "골드",
+                "qty": 1500,
+                "prob": 0.15
+              },
+              {
+                "name": "골드",
+                "qty": 3000,
+                "prob": 0.05
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "슬롯3",
+        "groups": [
+          {
+            "prob": 1.0,
+            "items": [
+              {
+                "name": "반향 저장기",
+                "qty": 1,
+                "prob": 0.2,
+                "y": true,
+                "alt": "반향 저장기"
+              },
+              {
+                "name": "맞춤형 기관총",
+                "qty": 1,
+                "prob": 0.2,
+                "y": true,
+                "alt": "맞춤형 기관총"
+              },
+              {
+                "name": "증강 코일 탑제 장치",
+                "qty": 1,
+                "prob": 0.2,
+                "y": true,
+                "alt": "증강 코일 탑제 장치"
+              },
+              {
+                "name": "오염된 원형 용기",
+                "qty": 1,
+                "prob": 0.2,
+                "y": true,
+                "alt": "오염된 원형 용기"
+              },
+              {
+                "name": "미륨 랜즈 장치",
+                "qty": 1,
+                "prob": 0.2,
+                "y": true,
+                "alt": "미륨 랜즈 장치"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "슬롯4",
+        "groups": [
+          {
+            "prob": 0.45,
+            "items": [
+              {
+                "name": "자경물자 300",
+                "qty": 1,
+                "prob": 0.4
+              },
+              {
+                "name": "경험치 물자 100",
+                "qty": 1,
+                "prob": 0.4
+              },
+              {
+                "name": "크래딧 물자 100",
+                "qty": 1,
+                "prob": 0.2
+              }
+            ]
+          },
+          {
+            "prob": 0.25,
+            "items": [
+              {
+                "name": "지침",
+                "qty": 1,
+                "prob": 0.80
+              },
+              {
+                "name": "교본",
+                "qty": 1,
+                "prob": 0.05
+              },
+              {
+                "name": "훈련교본",
+                "qty": 1,
+                "prob": 0.15
+              }
+            ]
+          },
+          {
+            "prob": 0.10,
+            "items": [
+              {
+                "name": "승무원 1",
+                "qty": 1,
+                "prob": 0.80
+              },
+              {
+                "name": "승무원 2",
+                "qty": 1,
+                "prob": 0.15
+              },
+              {
+                "name": "승무원 3",
+                "qty": 1,
+                "prob": 0.05
+              }
+            ]
+          },
+          {
+            "prob": 0.10,
+            "items": [
+              {
+                "name": "부속품",
+                "qty": 200,
+                "prob": 0.80
+              },
+              {
+                "name": "부속품",
+                "qty": 500,
+                "prob": 0.15
+              },
+              {
+                "name": "부속품",
+                "qty": 1000,
+                "prob": 0.05
+              }
+            ]
+          },
+          {
+            "prob": 0.10,
+            "items": [
+              {
+                "name": "5배임무",
+                "qty": 10,
+                "prob": 0.80
+              },
+              {
+                "name": "5배임무",
+                "qty": 20,
+                "prob": 0.15
+              },
+              {
+                "name": "5배임무",
+                "qty": 50,
+                "prob": 0.05
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "슬롯5",
+        "groups": [
+          {
+            "prob": 0.2,
+            "items": [
+              {
+                "name": "파편",
+                "qty": 1,
+                "prob": 0.75
+              },
+              {
+                "name": "조각",
+                "qty": 1,
+                "prob": 0.23
+              },
+              {
+                "name": "코어",
+                "qty": 1,
+                "prob": 0.02
+              }
+            ]
+          },
+          {
+            "prob": 0.8,
+            "items": [
+              {
+                "name": "꽝",
+                "qty": 1,
+                "prob": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "슬롯6",
+        "groups": [
+          {
+            "prob": 0.025,
+            "items": [
+              {
+                "name": "자유 경험치",
+                "qty": 350000,
+                "prob": 1.0
+              }
+            ]
+          },
+          {
+            "prob": 0.975,
+            "items": [
+              {
+                "name": "꽝",
+                "qty": 1,
+                "prob": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
