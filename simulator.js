@@ -128,9 +128,11 @@ function setOwned(name) {
    § 4. 핵심 뽑기 로직 (Core Gacha Logic)
    ────────────────────────────────────────────── */
 
-// prob 가중치 배열에서 랜덤 하나 선택
+// prob 가중치 배열에서 랜덤 하나 선택 (부동소수점 오차 방지를 위해 확률 합계 정규화)
 function weightedRandom(arr) {
-    let r = Math.random(), s = 0;
+    let sum = 0;
+    for (const item of arr) sum += item.prob;
+    let r = Math.random() * sum, s = 0;
     for (const item of arr) { s += item.prob; if (r <= s) return item; }
     return arr[arr.length - 1];
 }
@@ -151,7 +153,10 @@ function pickFromYGroup(group) {
         if (isOwned(item.name)) removed += item.prob;
         else remaining.push({ ...item });
     });
-    if (!remaining.length) return { chosen: group.items[0].alt, alt: true };
+    if (!remaining.length) {
+        const picked = weightedRandom(group.items);
+        return { chosen: picked.alt || picked.name, alt: true };
+    }
     if (removed > 0) {
         const bonus = removed / remaining.length;
         remaining.forEach(i => i.prob += bonus);
