@@ -24,6 +24,7 @@ const pityCount = { '파편': 0, '조각': 0, '코어': 0 };
 
 // 수령 완료 아이템(y:true)
 const ownedSet = new Set();
+const preOwnedSet = new Set();
 
 // 누적 인벤토리 { 아이템명: 총수량 }
 const inventory = {};
@@ -57,6 +58,18 @@ async function loadData() {
         fetch('gacha_data.json').then(r => r.json()),
         fetch('shop_data.json').then(r => r.json())
     ]);
+
+    // 사전 보유 캐시 로드
+    const cached = localStorage.getItem('mirny_preowned');
+    if (cached) {
+        try {
+            const arr = JSON.parse(cached);
+            arr.forEach(item => preOwnedSet.add(item));
+        } catch(e) {}
+    }
+    // 사전 보유 아이템을 현재 보유 목록에 기본 세팅
+    preOwnedSet.forEach(item => ownedSet.add(item));
+
     initChecklist();
     initShop();
     updateInventoryUI();
@@ -82,11 +95,17 @@ function initChecklist() {
             }));
         });
     }
-    renderChecklistByBox(boxTanks, 'tanks-list');
-    renderChecklistByBox(boxCosmetics, 'cosmetics-list');
+    
+    // 사이드바 실시간 체크리스트
+    renderChecklistByBox(boxTanks, 'tanks-list', false);
+    renderChecklistByBox(boxCosmetics, 'cosmetics-list', false);
+    
+    // 사전 보유 설정 모달 체크리스트
+    renderChecklistByBox(boxTanks, 'pre-tanks-list', true);
+    renderChecklistByBox(boxCosmetics, 'pre-cosmetics-list', true);
 }
 
-function renderChecklistByBox(boxMap, containerId) {
+function renderChecklistByBox(boxMap, containerId, isPreOwned = false) {
     const el = document.getElementById(containerId);
     if (!el) return;
     el.innerHTML = '';
@@ -99,12 +118,23 @@ function renderChecklistByBox(boxMap, containerId) {
         names.forEach(name => {
             const div = document.createElement('div');
             div.className = 'checklist-item';
-            div.id = `wrap_${CSS.escape(name)}`;
+            const prefix = isPreOwned ? 'pre_' : '';
+            div.id = `${prefix}wrap_${CSS.escape(name)}`;
             div.innerHTML = `
-                <input type="checkbox" id="chk_${name}" value="${name}">
-                <label for="chk_${name}">${name}</label>`;
-            div.querySelector('input').addEventListener('change', e => {
-                e.target.checked ? ownedSet.add(name) : ownedSet.delete(name);
+                <input type="checkbox" id="${prefix}chk_${name}" value="${name}">
+                <label for="${prefix}chk_${name}">${name}</label>`;
+            
+            const cb = div.querySelector('input');
+            const isChecked = isPreOwned ? preOwnedSet.has(name) : ownedSet.has(name);
+            cb.checked = isChecked;
+            if (isChecked) div.classList.add('owned');
+            
+            cb.addEventListener('change', e => {
+                if (isPreOwned) {
+                    e.target.checked ? preOwnedSet.add(name) : preOwnedSet.delete(name);
+                } else {
+                    e.target.checked ? ownedSet.add(name) : ownedSet.delete(name);
+                }
                 div.classList.toggle('owned', e.target.checked);
             });
             el.appendChild(div);
@@ -418,19 +448,49 @@ function updateSummaryUI() {
         }
     }
 
-    // ── 소모품 / 기타 섹션 ──
-    const others = Object.keys(inventory).filter(n => !yNames.has(n) && n !== '꽝').sort();
-    if (others.length) {
-        el.insertAdjacentHTML('beforeend', `<div class="summary-item category-header">📦 소모품 / 기타</div>`);
-        const consLuck = calcConsumableLuck();
-        
-        others.forEach(n => {
+    // ── 소모품 / 기타 카테고리 세분화 ──
+    const categories = [
+        { title: '💎 자원', keys: ['크래딧', '자유 경험치', '골드', '프리미엄', '부속품'] },
+        { title: '📦 물자', keys: ['자경물자', '경험치 물자', '크래딧 물자', '자경물자 300', '경험치 물자 100', '크래딧 물자 100'] },
+        { title: '📖 승무원 교본', keys: ['책자', '지침', '교본', '훈련교본'] },
+        { title: '🗃️ 상자', keys: ['파편', '조각', '코어'] },
+        { title: '⚡ 기타', keys: ['5배임무', '승무원 1', '승무원 2', '승무원 3'] }
+    ];
+
+    const consLuck = calcConsumableLuck();
+    const otherNames = new Set(Object.keys(inventory).filter(n => !yNames.has(n) && n !== '꽝'));
+    
+    categories.forEach(cat => {
+        const catItems = cat.keys.filter(n => inventory[n]);
+        if (catItems.length > 0) {
+            el.insertAdjacentHTML('beforeend', `<div class="summary-item category-header">${cat.title}</div>`);
+            catItems.forEach(n => {
+                otherNames.delete(n); // 매칭된 아이템은 제거
+                let luckHtml = '';
+                if (consLuck && consLuck.itemLuck[n]) {
+                    const l = consLuck.itemLuck[n];
+                    luckHtml = ` <span class="${l.luckCls}" style="font-size:13px; margin-left:6px;">${l.luckArrow} (기대 ${Math.round(l.exp).toLocaleString()})</span>`;
+                }
+                
+                el.insertAdjacentHTML('beforeend', `
+                    <div class="summary-item">
+                        <span>${n}${luckHtml}</span>
+                        <strong class="summary-item-count">${inventory[n].toLocaleString()}</strong>
+                    </div>`);
+            });
+        }
+    });
+
+    // 지정되지 않은 나머지 미분류 기타 아이템
+    const leftover = Array.from(otherNames).sort();
+    if (leftover.length > 0) {
+        el.insertAdjacentHTML('beforeend', `<div class="summary-item category-header">❓ 기타 미분류</div>`);
+        leftover.forEach(n => {
             let luckHtml = '';
             if (consLuck && consLuck.itemLuck[n]) {
                 const l = consLuck.itemLuck[n];
                 luckHtml = ` <span class="${l.luckCls}" style="font-size:13px; margin-left:6px;">${l.luckArrow} (기대 ${Math.round(l.exp).toLocaleString()})</span>`;
             }
-            
             el.insertAdjacentHTML('beforeend', `
                 <div class="summary-item">
                     <span>${n}${luckHtml}</span>
@@ -860,11 +920,20 @@ function resetAll() {
     for (const k in altTankCount) altTankCount[k] = 0;
     Object.keys(tankLog).forEach(k => delete tankLog[k]);
     Object.keys(altConsumableCount).forEach(k => delete altConsumableCount[k]);
+    // 사전 보유 항목으로 롤백
     ownedSet.clear();
-    document.querySelectorAll('.checklist-item input').forEach(cb => {
-        cb.checked = false;
-        cb.closest('.checklist-item')?.classList.remove('owned');
+    preOwnedSet.forEach(item => ownedSet.add(item));
+    
+    // 체크박스 UI 업데이트 (사이드바)
+    document.querySelectorAll('#tanks-list .checklist-item, #cosmetics-list .checklist-item').forEach(wrap => {
+        const cb = wrap.querySelector('input');
+        if (!cb) return;
+        const name = cb.value;
+        const isChecked = preOwnedSet.has(name);
+        cb.checked = isChecked;
+        wrap.classList.toggle('owned', isChecked);
     });
+
     Object.keys(inventory).forEach(k => delete inventory[k]);
     totalOpened = 0; totalSpent = 0; freeClaimUsed = false;
     clearLog();
@@ -874,7 +943,22 @@ function resetAll() {
 
 
 /* ──────────────────────────────────────────────
-   § 11. 앱 시작 (App Init)
+/* ──────────────────────────────────────────────
+   § 11. 앱 시작 및 이벤트 (App Init)
    ────────────────────────────────────────────── */
 
 document.addEventListener('DOMContentLoaded', loadData);
+
+function openPreOwnedModal() {
+    document.getElementById('preowned-modal')?.classList.add('open');
+}
+function closePreOwnedModal() {
+    document.getElementById('preowned-modal')?.classList.remove('open');
+}
+function savePreOwnedAndClose() {
+    localStorage.setItem('mirny_preowned', JSON.stringify([...preOwnedSet]));
+    // 사전 보유 항목을 현재 보유 상태에 반영
+    preOwnedSet.forEach(item => setOwned(item));
+    closePreOwnedModal();
+    alert('사전 보유 설정이 영구 저장되었습니다.\n(전체 초기화 시에도 이 항목들은 보유 상태를 유지합니다)');
+}

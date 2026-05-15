@@ -86,6 +86,7 @@
                 <h2>보유 상태</h2>
                 <button class="icon-btn sidebar-close-btn" onclick="closeSidebar()" aria-label="닫기">✕</button>
             </div>
+            <button class="reset-all-btn" style="width: 100%; margin-bottom: 12px; background: var(--border);" onclick="openPreOwnedModal()">⚙️ 차고 영구 보유 아이템 설정</button>
             <p class="sidebar-hint">획득 시 자동 체크됩니다. 체크 항목은 뽑기에서 제외되며 남은 아이템에 확률이 균등 분배됩니다.</p>
 
             <div class="checklist-section">
@@ -235,6 +236,30 @@
             </div>
             <div class="modal-body" id="modal-summary-content">
                 <!-- 내용 복사 대상 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ 사전 보유 설정 모달 ════════════════════════════ -->
+    <div class="modal-overlay scroll-overlay" id="preowned-modal" onclick="closePreOwnedModal()">
+        <div class="modal-content modal-lg modal-full-height" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <span class="shop-title">⚙️ 차고 영구 보유 설정</span>
+                <button class="icon-btn" onclick="closePreOwnedModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <p class="sidebar-hint" style="margin-bottom:16px;">여기에 체크한 항목은 브라우저 캐시에 영구 저장되어, <strong>전체 초기화</strong>나 <strong>새로고침</strong> 후에도 보유 상태가 계속 유지됩니다.</p>
+                <div class="checklist-section">
+                    <h3>⚙ 전차 (슬롯 1)</h3>
+                    <div id="pre-tanks-list"></div>
+                </div>
+                <div class="checklist-section" style="margin-top:20px;">
+                    <h3>✦ 치장품 (기타 슬롯)</h3>
+                    <div id="pre-cosmetics-list"></div>
+                </div>
+                <div class="modal-footer" style="margin-top:20px;">
+                    <button class="reset-all-btn" style="width:100%; background:var(--success); color:#000;" onclick="savePreOwnedAndClose()">💾 캐시에 영구 저장 적용</button>
+                </div>
             </div>
         </div>
     </div>
