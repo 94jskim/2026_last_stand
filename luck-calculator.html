@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>운 지수 계산기 - 미르니 시뮬레이터</title>
+    <meta name="description" content="이미 개봉한 상자 결과를 입력하여 운 지수와 구매 비용을 계산합니다">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .calc-container {
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg);
+        }
+
+        .calc-header {
+            padding: 14px 16px 10px;
+            background: var(--panel);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .calc-header-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .calc-header h1 {
+            margin: 0;
+            color: var(--accent);
+            font-size: 20px;
+            line-height: 1.2;
+        }
+
+        .calc-header p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            min-height: 34px;
+            padding: 0 10px;
+            border: 1px solid var(--border);
+            border-radius: var(--r-sm);
+            background: var(--card);
+            color: var(--text);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .calc-tabs {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(104px, 1fr));
+            gap: 8px;
+            padding: 10px 16px;
+            background: var(--panel);
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .calc-tab {
+            min-height: 46px;
+            padding: 8px 10px;
+            border: 1px solid var(--border);
+            border-radius: var(--r-sm);
+            background: var(--card);
+            color: var(--muted);
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: border-color .15s, color .15s, background .15s, transform .15s;
+        }
+
+        .calc-tab:hover {
+            color: var(--text);
+            border-color: var(--accent-dim);
+        }
+
+        .calc-tab.active {
+            background: color-mix(in srgb, var(--accent) 14%, var(--card));
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .tab-status {
+            display: block;
+            margin-top: 2px;
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .calc-content {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+        }
+
+        .calc-tab-pane {
+            display: none;
+            padding: 16px;
+        }
+
+        .calc-tab-pane.active {
+            display: block;
+        }
+
+        .calc-panel {
+            max-width: 1120px;
+            margin: 0 auto;
+        }
+
+        .panel-title {
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .panel-title h2 {
+            margin: 0;
+            color: var(--text);
+            font-size: 18px;
+        }
+
+        .panel-title span {
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .panel-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-section {
+            margin-bottom: 16px;
+        }
+
+        .input-section h3 {
+            margin: 0 0 10px;
+            color: var(--accent);
+            font-size: 14px;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            align-items: stretch;
+        }
+
+        .input-grid.compact {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .input-row,
+        .check-row,
+        .package-row,
+        .summary-box {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--r-sm);
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-height: 52px;
+            padding: 8px 10px;
+            cursor: text;
+        }
+
+        .input-row label,
+        .check-row label {
+            flex: 1;
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 700;
+            min-width: 0;
+            overflow-wrap: anywhere;
+        }
+
+        .input-row input[type="number"] {
+            width: 96px;
+            min-height: 36px;
+            padding: 6px 8px;
+            border: 1px solid var(--border);
+            border-radius: var(--r-sm);
+            background: var(--inner);
+            color: var(--text);
+            font: inherit;
+            font-size: 14px;
+            text-align: right;
+        }
+
+        .input-row input[type="number"]:focus {
+            outline: 2px solid var(--accent);
+            border-color: var(--accent);
+        }
+
+        .package-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 12px;
+            align-items: center;
+            min-height: 62px;
+            padding: 10px;
+        }
+
+        .package-name {
+            color: var(--text);
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        .package-meta {
+            margin-top: 2px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .stepper {
+            display: grid;
+            grid-template-columns: 36px 48px 36px;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .stepper button,
+        .free-box-btn {
+            min-height: 36px;
+            border: 1px solid var(--border);
+            border-radius: var(--r-sm);
+            background: var(--inner);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 18px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .stepper button:hover,
+        .free-box-btn:hover:not(:disabled) {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .stepper button:disabled,
+        .free-box-btn:disabled {
+            opacity: .45;
+            cursor: not-allowed;
+        }
+
+        .stepper-value {
+            color: var(--accent);
+            font-size: 15px;
+            font-weight: 800;
+            text-align: center;
+        }
+
+        .free-box-section {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 12px;
+            align-items: center;
+            padding: 12px;
+            margin-bottom: 16px;
+            background: var(--card);
+            border: 2px solid var(--accent-dim);
+            border-radius: var(--r-sm);
+        }
+
+        .free-box-title {
+            color: var(--text);
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        .free-box-count {
+            margin-top: 2px;
+            color: var(--success);
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .free-box-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 42px);
+            gap: 6px;
+        }
+
+        .free-box-btn {
+            font-size: 13px;
+        }
+
+        .check-row {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-height: 48px;
+            padding: 8px 10px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .check-row input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--accent);
+            flex: 0 0 auto;
+        }
+
+        .check-row:has(input:checked) {
+            border-color: var(--accent);
+            background: color-mix(in srgb, var(--accent) 10%, var(--card));
+        }
+
+        .check-row:focus-within {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        .tag {
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .summary-box {
+            padding: 12px;
+        }
+
+        .summary-box strong {
+            display: block;
+            margin-bottom: 4px;
+            color: var(--accent);
+            font-size: 20px;
+        }
+
+        .summary-box span {
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .cost-summary {
+            margin-bottom: 14px;
+            padding: 12px;
+            background: var(--card);
+            border: 2px solid var(--accent-dim);
+            border-radius: var(--r-sm);
+        }
+
+        .cost-summary h3 {
+            margin: 0 0 10px;
+            color: var(--accent);
+            font-size: 15px;
+        }
+
+        .cost-row,
+        .summary-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 7px 0;
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
+            font-size: 13px;
+        }
+
+        .cost-row:last-child,
+        .summary-item:last-child {
+            border-bottom: 0;
+        }
+
+        .cost-row.total {
+            margin-top: 4px;
+            padding-top: 10px;
+            border-top: 2px solid var(--border);
+            border-bottom: 0;
+            font-weight: 800;
+        }
+
+        .cost-value,
+        .summary-item-count {
+            color: var(--accent);
+            font-weight: 800;
+            text-align: right;
+        }
+
+        .cost-value.free {
+            color: var(--success);
+        }
+
+        .result-hidden {
+            padding: 34px 16px;
+            color: var(--muted);
+            text-align: center;
+        }
+
+        .result-hidden h3 {
+            margin: 0 0 6px;
+            color: var(--text);
+            font-size: 16px;
+        }
+
+        .result-card {
+            margin-bottom: 14px;
+            padding: 12px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--r-sm);
+        }
+
+        .result-card h3 {
+            margin: 0 0 10px;
+            color: var(--accent);
+            font-size: 15px;
+        }
+
+        .report-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: flex-end;
+        }
+
+        .report-toolbar .text-btn {
+            min-height: 32px;
+            white-space: nowrap;
+        }
+
+        .text-btn:disabled {
+            opacity: .45;
+            cursor: not-allowed;
+        }
+
+        .report-board {
+            margin-top: 14px;
+        }
+
+        .report-columns {
+            display: block;
+        }
+
+        .report-columns > div {
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        .calc-modal-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: flex-end;
+        }
+
+        #modal-summary-content {
+            display: block;
+            column-width: 300px;
+            column-gap: 32px;
+            column-rule: 1px solid var(--border-soft);
+        }
+
+        #modal-summary-content > div {
+            break-inside: avoid;
+            page-break-inside: avoid;
+            margin-bottom: 6px;
+        }
+
+        .calc-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1.2fr 1fr;
+            gap: 8px;
+            padding: 10px 16px;
+            background: var(--panel);
+            border-top: 1px solid var(--border);
+        }
+
+        .calc-btn {
+            min-height: 42px;
+            padding: 8px 10px;
+            border: 1px solid var(--border);
+            border-radius: var(--r-sm);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .calc-btn-primary {
+            background: var(--accent);
+            color: #111;
+            border-color: var(--accent);
+        }
+
+        .calc-btn-secondary {
+            background: var(--card);
+            color: var(--text);
+        }
+
+        .calc-btn-secondary:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .calc-btn:disabled {
+            opacity: .45;
+            cursor: not-allowed;
+        }
+
+        @media (min-width: 760px) {
+            .calc-header {
+                padding: 18px 24px 12px;
+            }
+
+            .calc-header h1 {
+                font-size: 24px;
+            }
+
+            .calc-tabs {
+                padding: 12px 24px;
+                grid-template-columns: repeat(5, 1fr);
+                overflow-x: visible;
+            }
+
+            .calc-tab {
+                font-size: 14px;
+            }
+
+            .calc-tab-pane {
+                padding: 22px 24px;
+            }
+
+            .panel-title h2 {
+                font-size: 22px;
+            }
+
+            .input-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .input-grid.compact,
+            .summary-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+
+            .calc-actions {
+                grid-template-columns: 140px 140px 1fr 140px;
+                padding: 12px 24px;
+            }
+
+            .report-board {
+                display: grid;
+                grid-template-columns: minmax(300px, 420px) minmax(0, 1fr);
+                gap: 18px;
+                align-items: start;
+            }
+
+            .report-columns {
+                column-width: 300px;
+                column-gap: 24px;
+                column-rule: 1px solid var(--border-soft);
+            }
+
+        }
+
+        @media (min-width: 1024px) {
+            .input-grid,
+            .input-grid.compact,
+            .summary-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+
+            .package-row,
+            .input-row,
+            .check-row {
+                min-height: 58px;
+            }
+
+            .stepper {
+                grid-template-columns: 38px 46px 38px;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .calc-header-top {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .calc-tabs {
+                grid-template-columns: repeat(5, minmax(92px, 1fr));
+                padding: 8px 10px;
+                gap: 6px;
+            }
+
+            .calc-tab {
+                min-height: 40px;
+                padding: 6px 8px;
+                font-size: 11px;
+            }
+
+            .calc-tab-pane {
+                padding: 12px 10px;
+            }
+
+            .panel-title {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            .input-grid.compact,
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .package-row {
+                grid-template-columns: 1fr;
+            }
+
+            .stepper {
+                grid-template-columns: 44px 1fr 44px;
+            }
+
+            .free-box-section {
+                grid-template-columns: 1fr;
+            }
+
+            .free-box-buttons {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .calc-actions {
+                grid-template-columns: 1fr 1fr;
+                padding: 8px 10px;
+            }
+
+            .report-toolbar {
+                justify-content: stretch;
+            }
+
+            .report-toolbar .text-btn {
+                flex: 1 1 calc(50% - 6px);
+            }
+        }
+    </style>
+    <script>
+        (function () {
+            function getTheme() {
+                const saved = localStorage.getItem('theme-pref');
+                if (saved) return saved;
+                return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+            if (getTheme() === 'light') document.documentElement.classList.add('light-theme');
+        })();
+    </script>
+</head>
+
+<body>
+    <div class="calc-container">
+        <header class="calc-header">
+            <div class="calc-header-top">
+                <div>
+                    <h1>운 지수 계산기</h1>
+                    <p>개봉 결과를 입력해 구매 비용과 종합 운 지수를 확인하세요</p>
+                </div>
+                <a href="index.html" class="back-link">← 돌아가기</a>
+            </div>
+        </header>
+
+        <nav class="calc-tabs" aria-label="계산 단계">
+            <button class="calc-tab active" type="button" data-tab="boxes" onclick="switchTab('boxes')">1. 상자<span class="tab-status" id="tab-status-boxes">0개</span></button>
+            <button class="calc-tab" type="button" data-tab="tanks" onclick="switchTab('tanks')">2. 전차<span class="tab-status" id="tab-status-tanks">0대</span></button>
+            <button class="calc-tab" type="button" data-tab="cosmetics" onclick="switchTab('cosmetics')">3. 치장품<span class="tab-status" id="tab-status-cosmetics">0개</span></button>
+            <button class="calc-tab" type="button" data-tab="consumables" onclick="switchTab('consumables')">4. 소모품<span class="tab-status" id="tab-status-consumables">0개</span></button>
+            <button class="calc-tab" type="button" data-tab="result" onclick="switchTab('result')">5. 결과<span class="tab-status" id="tab-status-result">대기</span></button>
+        </nav>
+
+        <main class="calc-content">
+            <section class="calc-tab-pane active" id="tab-boxes">
+                <div class="calc-panel">
+                    <div class="panel-title">
+                        <h2>상자 구매 + 획득 상자</h2>
+                        <div class="panel-actions">
+                            <span id="box-step-summary">0개 개봉 · 0원</span>
+                            <button class="text-btn" type="button" onclick="resetTab('boxes')">초기화</button>
+                        </div>
+                    </div>
+
+                    <div class="input-section">
+                        <h3>상자 구매</h3>
+                        <div id="shop-packages-input" class="input-grid"></div>
+                    </div>
+
+                    <div class="free-box-section">
+                        <div>
+                            <div class="free-box-title">무료 상자</div>
+                            <div class="free-box-count"><span id="free-count">0</span>/10개</div>
+                        </div>
+                        <div class="free-box-buttons">
+                            <button class="free-box-btn" id="remove-free-btn" type="button" onclick="addFreeBox(-1)">-1</button>
+                            <button class="free-box-btn" id="add-free-btn" type="button" onclick="addFreeBox(1)">+1</button>
+                            <button class="free-box-btn" id="add-free-10-btn" type="button" onclick="addFreeBox(10)">+10</button>
+                        </div>
+                    </div>
+
+                    <div class="input-section">
+                        <h3>획득 상자</h3>
+                        <div class="input-grid compact">
+                            <div class="input-row">
+                                <label for="input-alt-shard">파편 상자</label>
+                                <input type="number" id="input-alt-shard" min="0" value="0" inputmode="numeric">
+                            </div>
+                            <div class="input-row">
+                                <label for="input-alt-piece">조각 상자</label>
+                                <input type="number" id="input-alt-piece" min="0" value="0" inputmode="numeric">
+                            </div>
+                            <div class="input-row">
+                                <label for="input-alt-core">코어 상자</label>
+                                <input type="number" id="input-alt-core" min="0" value="0" inputmode="numeric">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="summary-grid" id="box-open-summary"></div>
+                </div>
+            </section>
+
+            <section class="calc-tab-pane" id="tab-tanks">
+                <div class="calc-panel">
+                    <div class="panel-title">
+                        <h2>획득 전차</h2>
+                        <div class="panel-actions">
+                            <span id="tank-step-summary">0대 선택</span>
+                            <button class="text-btn" type="button" onclick="resetTab('tanks')">선택 해제</button>
+                        </div>
+                    </div>
+                    <div id="tank-inputs" class="input-grid"></div>
+                </div>
+            </section>
+
+            <section class="calc-tab-pane" id="tab-cosmetics">
+                <div class="calc-panel">
+                    <div class="panel-title">
+                        <h2>획득 치장품</h2>
+                        <div class="panel-actions">
+                            <span id="cosmetic-step-summary">0개 입력</span>
+                            <button class="text-btn" type="button" onclick="resetTab('cosmetics')">초기화</button>
+                        </div>
+                    </div>
+                    <div id="cosmetic-inputs" class="input-grid"></div>
+                </div>
+            </section>
+
+            <section class="calc-tab-pane" id="tab-consumables">
+                <div class="calc-panel">
+                    <div class="panel-title">
+                        <h2>획득 소모품</h2>
+                        <div class="panel-actions">
+                            <span id="consumable-step-summary">0개 입력</span>
+                            <button class="text-btn" type="button" onclick="resetTab('consumables')">초기화</button>
+                        </div>
+                    </div>
+                    <div id="consumable-inputs" class="input-grid"></div>
+                </div>
+            </section>
+
+            <section class="calc-tab-pane" id="tab-result">
+                <div class="calc-panel">
+                    <div class="panel-title">
+                        <h2>결과 확인</h2>
+                        <div class="report-toolbar">
+                            <button class="text-btn report-action" type="button" onclick="openSummaryModal()" disabled>⛶ 크게 보기</button>
+                            <button class="text-btn report-action" type="button" onclick="copyStatsToClipboard()" disabled>📋 복사</button>
+                            <button class="text-btn report-action" type="button" onclick="exportDataJSON()" disabled>💾 JSON</button>
+                            <button class="text-btn report-action" type="button" onclick="exportDataCSV()" disabled>📄 CSV</button>
+                        </div>
+                    </div>
+                    <div id="result-step-summary" class="summary-item category-header">계산 대기</div>
+                    <div id="result-content" class="result-hidden">
+                        <h3>계산 대기 중</h3>
+                        <p>입력 후 결과 확인을 눌러주세요</p>
+                    </div>
+                    <div id="detailed-stats" style="display: none;"></div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="calc-actions">
+            <button class="calc-btn calc-btn-secondary" id="prev-tab-btn" type="button" onclick="goPrevTab()">이전</button>
+            <button class="calc-btn calc-btn-secondary" id="next-tab-btn" type="button" onclick="goNextTab()">다음</button>
+            <button class="calc-btn calc-btn-primary" type="button" onclick="calculateLuck()">결과 확인</button>
+            <button class="calc-btn calc-btn-secondary" type="button" onclick="resetInputs()">초기화</button>
+        </footer>
+    </div>
+
+    <div class="modal-overlay scroll-overlay" id="summary-modal" onclick="closeSummaryModal()">
+        <div class="modal-content modal-lg modal-full-height" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <span class="shop-title">📊 누적 획득 종합 보고서</span>
+                <div class="calc-modal-actions">
+                    <button class="text-btn report-action" type="button" onclick="copyStatsToClipboard()" disabled>📋 복사</button>
+                    <button class="text-btn report-action" type="button" onclick="exportDataJSON()" disabled>💾 JSON</button>
+                    <button class="text-btn report-action" type="button" onclick="exportDataCSV()" disabled>📄 CSV</button>
+                    <button class="icon-btn" type="button" onclick="closeSummaryModal()">✕</button>
+                </div>
+            </div>
+            <div class="modal-body" id="modal-summary-content"></div>
+        </div>
+    </div>
+
+    <script src="luck-calculator.js"></script>
+</body>
+
+</html>

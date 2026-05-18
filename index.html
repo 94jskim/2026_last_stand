@@ -29,13 +29,18 @@
     <!-- ══ 데스크탑 헤더 ════════════════════════════════════════ -->
     <header class="top-header desktop-only">
         <h1 class="page-title">미르니 전리품 상자 시뮬레이터</h1>
-        <div class="theme-switch-wrapper">
-            <span class="theme-icon">☀️</span>
-            <label class="theme-switch">
-                <input type="checkbox" id="theme-toggle" onchange="toggleTheme(this.checked)">
-                <span class="slider round"></span>
-            </label>
-            <span class="theme-icon">🌙</span>
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <a href="luck-calculator.html" class="icon-btn" style="width: auto; padding: 0 12px; gap: 6px; display: flex; font-size: 14px; text-decoration: none;" title="운 지수 계산기">
+                🎲 운 지수 계산기
+            </a>
+            <div class="theme-switch-wrapper">
+                <span class="theme-icon">☀️</span>
+                <label class="theme-switch">
+                    <input type="checkbox" id="theme-toggle" onchange="toggleTheme(this.checked)">
+                    <span class="slider round"></span>
+                </label>
+                <span class="theme-icon">🌙</span>
+            </div>
         </div>
     </header>
     <script>
@@ -74,6 +79,7 @@
         <header class="mobile-header">
             <button class="icon-btn" onclick="openSidebar()" aria-label="보유 상태 열기">☰</button>
             <span class="mobile-title">미르니 시뮬레이터</span>
+            <a href="luck-calculator.html" class="icon-btn" aria-label="운 지수 계산기" style="text-decoration: none; font-size: 18px;">🎲</a>
             <button class="icon-btn shop-icon-btn" onclick="openShopModal()" aria-label="상점 열기">🛒</button>
         </header>
 
@@ -86,8 +92,10 @@
                 <h2>보유 상태</h2>
                 <button class="icon-btn sidebar-close-btn" onclick="closeSidebar()" aria-label="닫기">✕</button>
             </div>
-            <button class="reset-all-btn" style="width: 100%; margin-bottom: 12px; background: var(--border);" onclick="openPreOwnedModal()">⚙️ 차고 영구 보유 아이템 설정</button>
-            <p class="sidebar-hint">획득 시 자동 체크됩니다. 체크 항목은 뽑기에서 제외되며 남은 아이템에 확률이 균등 분배됩니다.</p>
+            <button class="reset-all-btn" style="width: 100%; margin-bottom: 12px; background: var(--card); color: var(--accent); border-color: var(--accent); font-size: 14px; padding: 8px 12px;" onclick="openPreOwnedModal()">⚙️ 차고 보유 전차 설정</button>
+            <p class="sidebar-hint">
+                획득 시 자동 체크됩니다. 체크 항목은 뽑기에서 제외되며 남은 아이템에 확률이 균등 분배됩니다.
+            </p>
 
             <div class="checklist-section">
                 <h3>⚙ 전차 (슬롯 1)</h3>
@@ -115,6 +123,8 @@
                             disabled>1개 열기</button>
                         <button class="box-btn box-open-btn" data-box="파편" data-count="5" onclick="openBoxes('파편',5)"
                             disabled>5개 열기</button>
+                        <button class="box-btn box-open-btn box-open-all-btn" data-box="파편" onclick="openAllBoxes('파편')"
+                            disabled>모두 열기</button>
                     </div>
                     <div class="pity-bar-wrap">
                         <div class="pity-label-row"><span class="pity-title">⚡ 천장</span><span id="pity-text-파편">0 /
@@ -135,6 +145,8 @@
                             disabled>1개 열기</button>
                         <button class="box-btn box-open-btn" data-box="조각" data-count="5" onclick="openBoxes('조각',5)"
                             disabled>5개 열기</button>
+                        <button class="box-btn box-open-btn box-open-all-btn" data-box="조각" onclick="openAllBoxes('조각')"
+                            disabled>모두 열기</button>
                     </div>
                     <div class="pity-bar-wrap">
                         <div class="pity-label-row"><span class="pity-title">⚡ 천장</span><span id="pity-text-조각">0 /
@@ -155,6 +167,8 @@
                             disabled>1개 열기</button>
                         <button class="box-btn box-open-btn" data-box="코어" data-count="5" onclick="openBoxes('코어',5)"
                             disabled>5개 열기</button>
+                        <button class="box-btn box-open-btn box-open-all-btn" data-box="코어" onclick="openAllBoxes('코어')"
+                            disabled>모두 열기</button>
                     </div>
                     <div class="pity-bar-wrap">
                         <div class="pity-label-row"><span class="pity-title">⚡ 천장</span><span id="pity-text-코어">0 /
@@ -199,6 +213,9 @@
                         <h2>📊 누적 획득 (종합)</h2>
                         <div class="btn-row">
                             <button class="text-btn desktop-only" onclick="openSummaryModal()">⛶ 크게 보기</button>
+                            <button class="text-btn desktop-only" onclick="copyStatsToClipboard()" title="통계를 텍스트로 복사">📋 복사</button>
+                            <button class="text-btn desktop-only" onclick="exportDataJSON()" title="통계 데이터를 JSON 파일로 저장">💾 JSON</button>
+                            <button class="text-btn desktop-only" onclick="exportDataCSV()" title="인벤토리를 CSV 파일로 저장">📄 CSV</button>
                             <!-- 모바일: 초기화는 여기에 -->
                             <button class="reset-all-btn mobile-only" onclick="resetAll()">🔄 초기화</button>
                         </div>
@@ -244,21 +261,25 @@
     <div class="modal-overlay scroll-overlay" id="preowned-modal" onclick="closePreOwnedModal()">
         <div class="modal-content modal-lg modal-full-height" onclick="event.stopPropagation()">
             <div class="modal-header">
-                <span class="shop-title">⚙️ 차고 영구 보유 설정</span>
+                <span class="shop-title">⚙️ 차고 보유 전차 설정</span>
                 <button class="icon-btn" onclick="closePreOwnedModal()">✕</button>
             </div>
             <div class="modal-body">
-                <p class="sidebar-hint" style="margin-bottom:16px;">여기에 체크한 항목은 브라우저 캐시에 영구 저장되어, <strong>전체 초기화</strong>나 <strong>새로고침</strong> 후에도 보유 상태가 계속 유지됩니다.</p>
+                <p class="sidebar-hint" style="margin-bottom:20px;">
+                    💡 <strong>차고에 이미 보유한 전차를 선택하세요</strong><br>
+                    체크한 항목은 브라우저 캐시에 저장되어, <strong>전체 초기화</strong>나 <strong>새로고침</strong> 후에도 보유 상태가 유지됩니다. 
+                    이 아이템들은 가챠에서 제외되며, 확률이 나머지 아이템에 균등 분배됩니다.
+                </p>
                 <div class="checklist-section">
                     <h3>⚙ 전차 (슬롯 1)</h3>
                     <div id="pre-tanks-list"></div>
                 </div>
-                <div class="checklist-section" style="margin-top:20px;">
+                <div class="checklist-section" style="margin-top:24px;">
                     <h3>✦ 치장품 (기타 슬롯)</h3>
                     <div id="pre-cosmetics-list"></div>
                 </div>
-                <div class="modal-footer" style="margin-top:20px;">
-                    <button class="reset-all-btn" style="width:100%; background:var(--success); color:#000;" onclick="savePreOwnedAndClose()">💾 캐시에 영구 저장 적용</button>
+                <div class="modal-footer" style="margin-top:24px;">
+                    <button class="reset-all-btn" style="width:100%; background:var(--success); color:#000; font-size:15px; padding:12px 20px;" onclick="savePreOwnedAndClose()">💾 적용</button>
                 </div>
             </div>
         </div>

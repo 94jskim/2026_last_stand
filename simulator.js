@@ -53,26 +53,39 @@ const altConsumableCount = {};
    ────────────────────────────────────────────── */
 
 async function loadData() {
-    // gacha_data.json + shop_data.json 병렬 로드
-    [gachaData, shopData] = await Promise.all([
-        fetch('gacha_data.json').then(r => r.json()),
-        fetch('shop_data.json').then(r => r.json())
-    ]);
+    try {
+        // gacha_data.json + shop_data.json 병렬 로드
+        [gachaData, shopData] = await Promise.all([
+            fetch('gacha_data.json').then(r => {
+                if (!r.ok) throw new Error('가챠 데이터 로드 실패');
+                return r.json();
+            }),
+            fetch('shop_data.json').then(r => {
+                if (!r.ok) throw new Error('상점 데이터 로드 실패');
+                return r.json();
+            })
+        ]);
 
-    // 사전 보유 캐시 로드
-    const cached = localStorage.getItem('mirny_preowned');
-    if (cached) {
-        try {
-            const arr = JSON.parse(cached);
-            arr.forEach(item => preOwnedSet.add(item));
-        } catch(e) {}
+        // 사전 보유 캐시 로드
+        const cached = localStorage.getItem('mirny_preowned');
+        if (cached) {
+            try {
+                const arr = JSON.parse(cached);
+                arr.forEach(item => preOwnedSet.add(item));
+            } catch(e) {
+                console.error('캐시 파싱 실패:', e);
+            }
+        }
+        // 사전 보유 아이템을 현재 보유 목록에 기본 세팅
+        preOwnedSet.forEach(item => ownedSet.add(item));
+
+        initChecklist();
+        initShop();
+        updateInventoryUI();
+    } catch (error) {
+        console.error('데이터 로드 오류:', error);
+        alert('데이터를 불러오는 중 오류가 발생했습니다.\n페이지를 새로고침해주세요.');
     }
-    // 사전 보유 아이템을 현재 보유 목록에 기본 세팅
-    preOwnedSet.forEach(item => ownedSet.add(item));
-
-    initChecklist();
-    initShop();
-    updateInventoryUI();
 }
 
 
@@ -118,6 +131,7 @@ function renderChecklistByBox(boxMap, containerId, isPreOwned = false) {
         names.forEach(name => {
             const div = document.createElement('div');
             div.className = 'checklist-item';
+            div.tabIndex = 0;
             const prefix = isPreOwned ? 'pre_' : '';
             div.id = `${prefix}wrap_${CSS.escape(name)}`;
             div.innerHTML = `
@@ -136,6 +150,17 @@ function renderChecklistByBox(boxMap, containerId, isPreOwned = false) {
                     e.target.checked ? ownedSet.add(name) : ownedSet.delete(name);
                 }
                 div.classList.toggle('owned', e.target.checked);
+            });
+            div.addEventListener('click', e => {
+                if (e.target.matches('input, label')) return;
+                cb.checked = !cb.checked;
+                cb.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+            div.addEventListener('keydown', e => {
+                if (e.key !== ' ' && e.key !== 'Enter') return;
+                e.preventDefault();
+                cb.checked = !cb.checked;
+                cb.dispatchEvent(new Event('change', { bubbles: true }));
             });
             el.appendChild(div);
         });
@@ -288,6 +313,32 @@ function openBoxes(boxName, count) {
     updateSummaryUI();
 }
 
+/**
+ * 보유한 모든 상자 열기
+ */
+function openAllBoxes(boxName) {
+    const count = boxInventory[boxName];
+    
+    if (count === 0) {
+        alert(`${boxName} 상자가 없습니다.`);
+        return;
+    }
+    
+    // 대량 개봉 시 확인
+    if (count > 50) {
+        if (!confirm(`${boxName} 상자 ${count}개를 모두 열겠습니까?\n\n⚠️ 대량 개봉은 시간이 걸릴 수 있습니다.`)) {
+            return;
+        }
+    } else if (count > 10) {
+        if (!confirm(`${boxName} 상자 ${count}개를 모두 열겠습니까?`)) {
+            return;
+        }
+    }
+    
+    // 성능 최적화를 위해 openBoxes 호출
+    openBoxes(boxName, count);
+}
+
 
 /* ──────────────────────────────────────────────
    § 6. 로그 HTML 생성 (Log Builder)
@@ -323,10 +374,30 @@ function buildLogEntry(boxName, results) {
 // 재고 뱃지 + 열기 버튼 활성화
 function updateInventoryUI() {
     for (const name in boxInventory) {
+        const count = boxInventory[name];
+        
+        // 재고 표시
         document.querySelectorAll(`[id="inv-count-${name}"]`)
-            .forEach(el => el.textContent = boxInventory[name].toLocaleString());
-        document.querySelectorAll(`.box-open-btn[data-box="${name}"]`)
-            .forEach(btn => btn.disabled = boxInventory[name] < +btn.dataset.count);
+            .forEach(el => el.textContent = count.toLocaleString());
+        
+        // 개별 버튼 활성화 (1개, 5개)
+        document.querySelectorAll(`.box-open-btn[data-box="${name}"][data-count]`)
+            .forEach(btn => {
+                const requiredCount = +btn.dataset.count;
+                btn.disabled = count < requiredCount;
+            });
+        
+        // 모두 열기 버튼 활성화
+        document.querySelectorAll(`.box-open-all-btn[data-box="${name}"]`)
+            .forEach(btn => {
+                btn.disabled = count === 0;
+                // 버튼 텍스트에 개수 표시
+                if (count > 0) {
+                    btn.textContent = `모두 열기 (${count}개)`;
+                } else {
+                    btn.textContent = '모두 열기';
+                }
+            });
     }
 }
 
@@ -1000,9 +1071,316 @@ function closePreOwnedModal() {
     document.getElementById('preowned-modal')?.classList.remove('open');
 }
 function savePreOwnedAndClose() {
-    localStorage.setItem('mirny_preowned', JSON.stringify([...preOwnedSet]));
-    // 사전 보유 항목을 현재 보유 상태에 반영
-    preOwnedSet.forEach(item => setOwned(item));
-    closePreOwnedModal();
-    alert('사전 보유 설정이 영구 저장되었습니다.\n(전체 초기화 시에도 이 항목들은 보유 상태를 유지합니다)');
+    try {
+        localStorage.setItem('mirny_preowned', JSON.stringify([...preOwnedSet]));
+        // 사전 보유 항목을 현재 보유 상태에 반영
+        ownedSet.clear();
+        preOwnedSet.forEach(item => ownedSet.add(item));
+        // 체크리스트 UI 동기화
+        document.querySelectorAll('.checklist-item input[type="checkbox"]').forEach(cb => {
+            if (!cb.id.startsWith('pre_')) {
+                const name = cb.value;
+                cb.checked = ownedSet.has(name);
+                const wrap = cb.closest('.checklist-item');
+                if (wrap) wrap.classList.toggle('owned', cb.checked);
+            }
+        });
+        closePreOwnedModal();
+    } catch (e) {
+        console.error('저장 실패:', e);
+        alert('저장 중 오류가 발생했습니다.');
+    }
 }
+
+
+/* ══════════════════════════════════════════════════════════
+   § 추가 기능 (Enhanced Features from Patch)
+   ══════════════════════════════════════════════════════════ */
+
+/**
+ * 대량 개봉 시 DOM 업데이트 최적화 (DocumentFragment 사용)
+ * 기존 openBoxes 함수를 성능 개선 버전으로 대체
+ */
+const originalOpenBoxes = openBoxes;
+function openBoxesOptimized(boxName, count) {
+    if (boxInventory[boxName] < count) {
+        alert(`${boxName} 상자 부족\n보유 ${boxInventory[boxName]}개 / 필요 ${count}개`);
+        return;
+    }
+    
+    boxInventory[boxName] -= count;
+    const logEl = document.getElementById('result-log');
+    if (totalOpened === 0) logEl.querySelector('.log-placeholder')?.remove();
+    
+    // DocumentFragment로 batch 처리 (성능 향상)
+    const fragment = document.createDocumentFragment();
+    const tempDiv = document.createElement('div');
+    
+    for (let i = 0; i < count; i++) {
+        totalOpened++;
+        openedCount[boxName]++;
+        const results = simulateBox(boxName);
+        
+        results.forEach(r => {
+            if (!r.isDud && r.name in boxInventory) boxInventory[r.name] += r.qty;
+            if (r.slotId === '슬롯1' && r.isNew && !tankLog[r.name]) {
+                tankLog[r.name] = { boxType: boxName, atCount: openedCount[boxName] };
+            }
+            if (r.slotId === '슬롯1' && r.isAlt) altTankCount[boxName]++;
+            if (r.isAlt) altConsumableCount[r.name] = (altConsumableCount[r.name] || 0) + r.qty;
+        });
+        
+        tempDiv.innerHTML = buildLogEntry(boxName, results);
+        fragment.prepend(tempDiv.firstChild);
+    }
+    
+    logEl.prepend(fragment);
+    
+    updateInventoryUI();
+    updatePityUI();
+    updateStatsBar();
+    updateSummaryUI();
+}
+
+// 성능 개선 버전으로 교체 (10개 이상 개봉 시)
+window.openBoxes = function(boxName, count) {
+    if (count >= 10) {
+        openBoxesOptimized(boxName, count);
+    } else {
+        originalOpenBoxes(boxName, count);
+    }
+};
+
+/**
+ * 통계 데이터를 JSON으로 내보내기
+ */
+function exportDataJSON() {
+    const data = {
+        timestamp: new Date().toISOString(),
+        totalOpened,
+        totalSpent,
+        openedCount: { ...openedCount },
+        boxInventory: { ...boxInventory },
+        inventory: { ...inventory },
+        tankLog: { ...tankLog },
+        ownedItems: Array.from(ownedSet),
+        pityCount: { ...pityCount }
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `mirny_stats_${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+/**
+ * 통계 데이터를 CSV로 내보내기
+ */
+function exportDataCSV() {
+    let csv = '아이템명,수량\n';
+    
+    for (const [name, qty] of Object.entries(inventory)) {
+        if (name !== '꽝') {
+            csv += `"${name}",${qty}\n`;
+        }
+    }
+    
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `mirny_inventory_${Date.now()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+/**
+ * 통계 요약 텍스트 생성 (복사용)
+ */
+function generateSummaryText() {
+    let text = '=== 미르니 가챠 시뮬레이션 결과 ===\n\n';
+    text += `총 개봉: ${totalOpened}개\n`;
+    text += `총 지출: ${totalSpent.toLocaleString()}원\n\n`;
+    
+    // 상자별 개봉 수
+    text += '[ 상자별 개봉 수 ]\n';
+    for (const [box, count] of Object.entries(openedCount)) {
+        if (count > 0) text += `${box}: ${count}개\n`;
+    }
+    text += '\n';
+    
+    // 획득 전차
+    const tanks = Object.keys(tankLog);
+    if (tanks.length > 0) {
+        text += '[ 획득 전차 ]\n';
+        tanks.forEach(name => {
+            const { boxType, atCount } = tankLog[name];
+            text += `${name} (${boxType} ${atCount}개째)\n`;
+        });
+        text += '\n';
+    }
+    
+    // 주요 아이템
+    text += '[ 주요 아이템 ]\n';
+    const importantItems = ['골드', '자유 경험치', '크래딧', '프리미엄'];
+    importantItems.forEach(item => {
+        if (inventory[item]) {
+            text += `${item}: ${inventory[item].toLocaleString()}\n`;
+        }
+    });
+    
+    text += '\n생성 일시: ' + new Date().toLocaleString('ko-KR');
+    return text;
+}
+
+/**
+ * 통계 텍스트 클립보드 복사
+ */
+async function copyStatsToClipboard() {
+    try {
+        const text = generateSummaryText();
+        await navigator.clipboard.writeText(text);
+        alert('통계가 클립보드에 복사되었습니다!');
+    } catch (err) {
+        console.error('클립보드 복사 실패:', err);
+        // 폴백: 텍스트 영역 사용
+        const textarea = document.createElement('textarea');
+        textarea.value = generateSummaryText();
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+            document.execCommand('copy');
+            alert('통계가 클립보드에 복사되었습니다!');
+        } catch (e) {
+            alert('클립보드 복사에 실패했습니다.');
+        }
+        document.body.removeChild(textarea);
+    }
+}
+
+/**
+ * 확률 계산기 (특정 전차 획득 확률)
+ */
+function calculateProbability(tankName, boxCount) {
+    const info = getTankExpected(tankName);
+    if (!info) return null;
+    
+    const { p, C } = info;
+    const expBoxes = info.expected;
+    
+    // 간단한 근사: 1 - (1 - 1/E)^N
+    const prob = 1 - Math.pow(1 - 1/expBoxes, boxCount);
+    
+    return {
+        tankName,
+        boxCount,
+        probability: prob,
+        percentile: (prob * 100).toFixed(2) + '%',
+        expected: Math.round(expBoxes)
+    };
+}
+
+/**
+ * 목표 전차까지 예상 비용 계산
+ */
+function calculateCostForTank(tankName) {
+    const info = getTankExpected(tankName);
+    if (!info || !shopData) return null;
+    
+    const expectedBoxes = Math.ceil(info.expected);
+    const boxType = info.boxName;
+    
+    // 가장 효율적인 패키지 찾기 (개당 가격 기준)
+    const packages = shopData.packages
+        .filter(p => !p.freeOnly && p.price > 0)
+        .map(p => ({
+            ...p,
+            pricePerBox: p.price / p.count
+        }))
+        .sort((a, b) => a.pricePerBox - b.pricePerBox);
+    
+    if (packages.length === 0) return null;
+    
+    const bestPackage = packages[0];
+    const packagesNeeded = Math.ceil(expectedBoxes / bestPackage.count);
+    const totalCost = packagesNeeded * bestPackage.price;
+    const totalBoxes = packagesNeeded * bestPackage.count;
+    
+    return {
+        tankName,
+        boxType,
+        expectedBoxes,
+        bestPackage: bestPackage.label,
+        packagesNeeded,
+        totalBoxes,
+        totalCost,
+        costFormatted: totalCost.toLocaleString() + '원'
+    };
+}
+
+/**
+ * 디버그 정보 출력
+ */
+function debugInfo() {
+    console.group('🔍 디버그 정보');
+    console.log('총 개봉:', totalOpened);
+    console.log('총 지출:', totalSpent);
+    console.log('상자 재고:', boxInventory);
+    console.log('천장 카운터:', pityCount);
+    console.log('보유 아이템 수:', ownedSet.size);
+    console.log('인벤토리 종류:', Object.keys(inventory).length);
+    console.log('획득 전차:', Object.keys(tankLog));
+    console.groupEnd();
+}
+
+// 전역 함수로 노출 (콘솔에서 사용 가능)
+window.debugInfo = debugInfo;
+window.calculateProbability = calculateProbability;
+window.calculateCostForTank = calculateCostForTank;
+window.copyStatsToClipboard = copyStatsToClipboard;
+window.exportDataJSON = exportDataJSON;
+window.exportDataCSV = exportDataCSV;
+
+/**
+ * 키보드 단축키 및 이벤트 리스너
+ */
+document.addEventListener('keydown', (e) => {
+    // ESC: 모달 닫기
+    if (e.key === 'Escape') {
+        closeSidebar();
+        closeShopModal();
+        closeSummaryModal();
+        closePreOwnedModal();
+    }
+});
+
+// 모달 오버레이 클릭 시 닫기
+document.querySelectorAll('.modal-overlay, .sidebar-overlay').forEach(overlay => {
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+            closeSidebar();
+            closeShopModal();
+            closeSummaryModal();
+            closePreOwnedModal();
+        }
+    });
+});
+
+/**
+ * 에러 핸들링
+ */
+window.addEventListener('error', (e) => {
+    console.error('전역 오류:', e.error);
+});
+
+window.addEventListener('unhandledrejection', (e) => {
+    console.error('처리되지 않은 Promise 거부:', e.reason);
+});
+
+console.log('✅ 미르니 시뮬레이터 로드 완료 (통합 버전)');
+console.log('📊 사용 가능한 콘솔 명령어: debugInfo(), calculateProbability(), calculateCostForTank(), copyStatsToClipboard()');

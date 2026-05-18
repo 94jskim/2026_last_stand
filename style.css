@@ -305,18 +305,27 @@ input:checked + .slider:before {
 }
 .sidebar-head h2 { font-size: 15px; color: var(--accent); }
 .sidebar-close-btn { display: none; }  /* 데스크탑에서는 닫기 버튼 숨김 */
-.sidebar-hint { font-size: 14px; color: var(--muted); line-height: 1.5; }
+.sidebar-hint { 
+    font-size: 14px; 
+    color: var(--muted); 
+    line-height: 1.6;
+    background: var(--card);
+    padding: 10px;
+    border-radius: var(--r-sm);
+    border-left: 3px solid var(--border);
+}
 
 .checklist-section {
     background: var(--inner);
     border: 1px solid var(--border-soft);
     border-radius: var(--r-md);
-    padding: 10px;
+    padding: 12px;
 }
 .checklist-section h3 {
-    font-size: 13px; font-weight: 700;
-    color: #999; text-transform: uppercase;
-    letter-spacing: .08em; margin-bottom: 8px;
+    font-size: 14px; font-weight: 700;
+    color: var(--accent); text-transform: uppercase;
+    letter-spacing: .08em; margin-bottom: 10px;
+    opacity: 0.9;
 }
 .box-section-header {
     font-size: 14px;
@@ -329,13 +338,27 @@ input:checked + .slider:before {
     margin-top: 4px;
 }
 .checklist-item {
-    display: flex; align-items: center; gap: 7px; padding: 3px 0;
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+    padding: 6px 8px;
+    border-radius: 4px;
+    transition: background 0.15s;
+}
+.checklist-item:hover {
+    background: rgba(240, 180, 41, 0.08);
 }
 .checklist-item input[type="checkbox"] {
-    width: 14px; height: 14px;
+    width: 18px; height: 18px;
     accent-color: var(--accent); cursor: pointer; flex-shrink: 0;
 }
-.checklist-item label  { font-size: 13px; cursor: pointer; user-select: none; }
+.checklist-item label  { 
+    font-size: 14px; 
+    cursor: pointer; 
+    user-select: none; 
+    line-height: 1.4;
+    flex: 1;
+}
 .checklist-item.owned label { text-decoration: line-through; color: var(--muted); }
 
 /* ── 메인 콘텐츠 ───────────────────────────────── */
@@ -389,30 +412,62 @@ input:checked + .slider:before {
     white-space: nowrap;
 }
 
-.btn-row { display: flex; gap: 7px; }
+.btn-row { display: flex; gap: 7px; flex-wrap: wrap; }
 
 /* 열기 버튼 */
 .box-btn {
     flex: 1;
-    padding: 8px 6px;
+    min-width: 85px;
+    padding: 10px 8px;
     font-size: 14px; font-weight: 700; font-family: inherit;
     background: var(--inner); color: var(--text);
     border: 1px solid var(--border);
     border-radius: var(--r-sm);
     cursor: pointer;
-    transition: background .15s, color .15s, transform .1s;
+    transition: background .15s, color .15s, transform .1s, box-shadow .15s;
 }
 .box-btn:hover:not(:disabled) {
     background: var(--accent); color: #111;
-    border-color: var(--accent); transform: translateY(-1px);
+    border-color: var(--accent); 
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(240, 180, 41, 0.3);
 }
-.box-btn:active:not(:disabled) { transform: translateY(0); }
+.box-btn:active:not(:disabled) { 
+    transform: translateY(0); 
+    box-shadow: 0 2px 6px rgba(240, 180, 41, 0.2);
+}
 .box-btn:disabled {
     opacity: .3; cursor: not-allowed;
     background: var(--inner) !important;
     color: var(--muted) !important;
     border-color: var(--border) !important;
 }
+
+/* 모두 열기 버튼 강조 */
+.box-open-all-btn:not(:disabled) {
+    background: linear-gradient(135deg, var(--accent-dim), var(--accent));
+    color: #111;
+    border-color: var(--accent);
+    font-weight: 800;
+    position: relative;
+    overflow: hidden;
+}
+.box-open-all-btn:not(:disabled)::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.5s;
+}
+.box-open-all-btn:not(:disabled):hover::before {
+    left: 100%;
+}
+.box-open-all-btn:not(:disabled):hover {
+    background: linear-gradient(135deg, var(--accent), #ffd54f);
+    box-shadow: 0 0 15px rgba(240, 180, 41, 0.5);
+}
+
 
 /* 천장 프로그레스 바 */
 .pity-bar-wrap { display: flex; flex-direction: column; gap: 3px; }
@@ -462,15 +517,25 @@ input:checked + .slider:before {
 .shop-pkg-count { font-size: 15px; font-weight: 700; }
 .shop-pkg-price { font-size: 13px; color: var(--accent); font-weight: 600; }
 .shop-buy-btn {
-    font-size: 13px; font-weight: 700; font-family: inherit;
-    padding: 4px 14px; margin-top: 2px;
+    font-size: 14px; font-weight: 700; font-family: inherit;
+    padding: 6px 16px; margin-top: 4px;
     background: var(--shop-buy-bg); color: var(--shop-buy-text);
-    border: none; border-radius: 4px;
+    border: none; border-radius: 5px;
     cursor: pointer;
-    transition: background .15s, transform .1s;
+    transition: all .15s;
 }
-.shop-buy-btn:hover { background: var(--shop-buy-hover); transform: translateY(-1px); }
-.shop-buy-btn:disabled { background: var(--shop-buy-disabled-bg); color: var(--shop-buy-disabled-text); cursor: not-allowed; transform: none; }
+.shop-buy-btn:hover { 
+    background: var(--shop-buy-hover); 
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(240, 180, 41, 0.4);
+}
+.shop-buy-btn:disabled { 
+    background: var(--shop-buy-disabled-bg); 
+    color: var(--shop-buy-disabled-text); 
+    cursor: not-allowed; 
+    transform: none;
+    box-shadow: none;
+}
 
 /* ── 결과 영역 ─────────────────────────────────── */
 .results-area {
@@ -492,26 +557,45 @@ input:checked + .slider:before {
     display: flex; align-items: center; justify-content: space-between;
     border-bottom: 1px solid var(--border-soft); padding-bottom: 8px;
 }
-.panel-header h2 { font-size: 15px; color: var(--accent); letter-spacing: .04em; }
+.panel-header h2 { 
+    font-size: 16px; 
+    color: var(--accent); 
+    letter-spacing: .04em; 
+    font-weight: 700;
+}
 
 .text-btn {
     font-size: 13px; font-family: inherit;
-    padding: 3px 9px;
+    padding: 5px 11px;
     background: transparent; color: var(--muted);
-    border: 1px solid var(--border); border-radius: 4px;
-    cursor: pointer; transition: color .15s, border-color .15s;
+    border: 1px solid var(--border); border-radius: 5px;
+    cursor: pointer; 
+    transition: all .15s;
+    font-weight: 600;
 }
-.text-btn:hover { color: var(--text-btn-hover); border-color: var(--text-btn-hover); }
+.text-btn:hover { 
+    color: var(--text-btn-hover); 
+    border-color: var(--text-btn-hover);
+    background: rgba(239, 115, 115, 0.1);
+    transform: translateY(-1px);
+}
 
 .reset-all-btn {
     font-size: 13px; font-family: inherit;
-    padding: 4px 12px;
+    padding: 6px 14px;
     background: transparent; color: var(--btn-reset-text);
     border: 1px solid var(--btn-reset-border); border-radius: 5px;
-    cursor: pointer; transition: background .15s;
+    cursor: pointer; 
+    transition: all .15s;
     white-space: nowrap;
+    font-weight: 600;
 }
-.reset-all-btn:hover { background: var(--btn-reset-hover-bg); color: #fff; }
+.reset-all-btn:hover { 
+    background: var(--btn-reset-hover-bg); 
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(198, 40, 40, 0.3);
+}
 
 .stats-bar {
     display: flex; gap: 12px;
@@ -642,6 +726,135 @@ input:checked + .slider:before {
 }
 .modal-footer strong { color: var(--accent); }
 
+/* ── 영구 보유 모달 개선 ───────────────────────── */
+/* 데스크탑: 다단 컬럼 레이아웃 */
+#preowned-modal .modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+/* 데스크탑에서 체크리스트를 2단 컬럼으로 */
+@media (min-width: 769px) {
+    #preowned-modal .modal-content {
+        max-width: 900px;
+    }
+    
+    #pre-tanks-list,
+    #pre-cosmetics-list {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px 16px;
+    }
+    
+    /* 상자별 섹션 헤더는 전체 너비 */
+    #pre-tanks-list .box-section-header,
+    #pre-cosmetics-list .box-section-header {
+        grid-column: 1 / -1;
+    }
+}
+
+/* 체크리스트 아이템 가시성 개선 */
+.checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    border-radius: 4px;
+    transition: background 0.15s;
+    cursor: pointer;
+    user-select: none;
+}
+
+.checklist-item:hover {
+    background: rgba(240, 180, 41, 0.08);
+}
+
+.checklist-item:focus-within,
+.checklist-item:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.checklist-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.checklist-item label {
+    font-size: 14px;
+    cursor: pointer;
+    user-select: none;
+    line-height: 1.4;
+    flex: 1;
+}
+
+/* 영구 보유 모달 힌트 강조 */
+#preowned-modal .sidebar-hint {
+    background: var(--card);
+    border-left: 3px solid var(--accent);
+    padding: 12px;
+    border-radius: var(--r-sm);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* 영구 보유 모달 섹션 타이틀 강조 */
+#preowned-modal .checklist-section h3 {
+    font-size: 15px;
+    color: var(--accent);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--border);
+}
+
+/* 영구 보유 모달 저장 버튼 강조 */
+#preowned-modal .modal-footer button {
+    font-size: 15px;
+    padding: 12px 20px;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(76, 238, 112, 0.3);
+    transition: all 0.2s;
+}
+
+#preowned-modal .modal-footer button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 238, 112, 0.4);
+}
+
+/* ── 접근성 개선 ───────────────────────────────── */
+/* 포커스 표시 강화 */
+*:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* 버튼 호버/포커스 상태 */
+button:focus-visible {
+    box-shadow: 0 0 0 3px rgba(240, 180, 41, 0.3);
+}
+
+/* 체크박스 포커스 */
+input[type="checkbox"]:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* 스크린 리더 전용 텍스트 */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
 /* ── 반응형: 모바일 (≤ 768px) ─────────────────── */
 @media (max-width: 768px) {
     /* 전체 레이아웃 */
@@ -697,6 +910,32 @@ input:checked + .slider:before {
         border-radius: var(--r-lg) var(--r-lg) 0 0;
         max-width: 100%; width: 100%;
         max-height: 70dvh;
+    }
+    
+    /* 모바일: 영구 보유 모달 단일 컬럼 */
+    #preowned-modal .modal-content {
+        max-height: 85dvh;
+    }
+    
+    #pre-tanks-list,
+    #pre-cosmetics-list {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    /* 모바일: 체크박스 터치 영역 확대 */
+    .checklist-item {
+        padding: 10px 8px;
+        min-height: 44px;
+    }
+    
+    .checklist-item input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .checklist-item label {
+        font-size: 15px;
     }
 }
 
